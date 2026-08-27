@@ -1053,6 +1053,11 @@ class IsolatedXdsKubernetesTestCase(
         # Random suffix per test.
         self.createRandomSuffix()
 
+        self.server_name = "psm-grpc-server"
+        # Enforce isolated hostnames per test execution run:
+        self.server_xds_host = f"{self.server_name}-{self.resource_suffix}"
+        self.server_xds_port = 8080
+
         # TD Manager
         self.td = self.initTrafficDirectorManager()
 
