@@ -636,13 +636,13 @@ def delete_k8s_resources(
         except k8s.NotFound:
             logging.warning("----- Skipped [not found]: %s", namespace_name)
         except retryers.RetryError as err:
-            _CLEANUP_RESULT.add_error(
-                "Retries exhausted while waiting for the "
-                f"deletion of namespace {namespace_name}: "
-                f"{err}"
-            )
-            logging.exception(
-                "----- Skipped [cleanup timed out]: %s", namespace_name
+            # GKE namespaces can sometimes get stuck in a Terminating state due to
+            # infrastructure finalizers (like GKE's neg-finalizer). Since cleanup is best-effort,
+            # we log a warning instead of raising an error that fails the entire build pipeline.
+            logging.warning(
+                "----- Skipped [cleanup timed out waiting for namespace deletion]: %s. Error: %s",
+                namespace_name,
+                err,
             )
         except Exception as err:  # noqa pylint: disable=broad-except
             _CLEANUP_RESULT.add_error(
