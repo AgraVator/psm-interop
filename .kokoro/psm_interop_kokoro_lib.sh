@@ -1364,7 +1364,7 @@ kokoro_install_dependencies() {
   sudo DEBIAN_FRONTEND=noninteractive apt-get -qq remove needrestart
   sudo DEBIAN_FRONTEND=noninteractive apt-get -qq update
   sudo DEBIAN_FRONTEND=noninteractive apt-get -qq install --auto-remove \
-    google-cloud-sdk-gke-gcloud-auth-plugin \
+    google-cloud-cli-gke-gcloud-auth-plugin \
     kubectl \
     parallel
   sudo rm -rf /var/lib/apt/lists
