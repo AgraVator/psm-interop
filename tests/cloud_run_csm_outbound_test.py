@@ -45,7 +45,13 @@ class CloudRunCsmOutboundTest(cloud_run_testcase.CloudRunXdsTestCase):
         return False
 
     @override
-    def assertSuccessfulRpcs(self, test_client: _XdsTestClient, **kwargs):
+    def assertSuccessfulRpcs(
+        self,
+        test_client: _XdsTestClient,
+        num_rpcs: int = 100,
+        *,
+        secure_channel: bool = False,
+    ):
         # Cloud Run outbound connections often return 503s during cold starts
         # when the container is scaling from zero. We wrap this in a retryer
         # to allow the connection to warm up.
@@ -56,7 +62,12 @@ class CloudRunCsmOutboundTest(cloud_run_testcase.CloudRunXdsTestCase):
             retry_on_exceptions=(AssertionError,),
             logger=logger,
         )
-        retryer(super().assertSuccessfulRpcs, test_client, **kwargs)
+        return retryer(
+            super().assertSuccessfulRpcs,
+            test_client,
+            num_rpcs=num_rpcs,
+            secure_channel=secure_channel,
+        )
 
     def test_cloud_run_to_cloud_run(self):
         with self.subTest("0_create_mesh"):
