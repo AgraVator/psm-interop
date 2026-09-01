@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import datetime as dt
+import time
 import logging
 from typing import Final
 
 from absl import flags
 from absl.testing import absltest
-from typing_extensions import TypeAlias, override
+from typing_extensions import override
 
 from framework import xds_k8s_flags
 from framework import xds_k8s_testcase
@@ -184,6 +185,19 @@ class DualStackTest(xds_k8s_testcase.RegularXdsKubernetesTestCase):
 
         with self.subTest("07_test_server_received_rpcs_from_test_client"):
             self.assertSuccessfulRpcs(test_client)
+
+        with self.subTest("07.5_chaos_delete_server_pod"):
+            logger.info(
+                "CHAOS: Simulating GKE pod eviction to trigger PR 279 dynamic lookup"
+            )
+            pod_name = test_servers[0].hostname
+            logger.info("CHAOS: Deleting server pod %s", pod_name)
+            self.server_runner.k8s_namespace.delete_pod(pod_name)
+            logger.info(
+                "CHAOS: Waiting 60 seconds for replacement pod to boot & TD EDS update..."
+            )
+
+            time.sleep(60)
 
         with self.subTest("08_confirm_all_servers_receive_traffic"):
             self.assertRpcsEventuallyGoToGivenServers(
